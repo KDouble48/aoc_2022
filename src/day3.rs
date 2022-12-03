@@ -30,7 +30,26 @@ fn parse(input: char) -> i32 {
     }
 }
 
-// #[aoc(day3, part2, Char)]
-// pub fn solve_part2(input: &str) -> i32 {
+#[aoc(day3, part2, Char)]
+pub fn solve_part2(input: &str) -> i32 {
+  let mut result = 0;
 
-// }
+  let s: Vec<&str> = input.split("\n").collect();
+
+  for i in (0..s.len()).step_by(3) {
+    for sa in s[i].chars() {
+      let rb = s[i+1].find(sa);
+      let rc = s[i+2].find(sa);
+      
+      match (rb, rc) {
+        (Some(_), Some(_)) => {
+          result += parse(sa);
+          break;
+        }
+        _ => continue,
+      }
+    }
+  }
+
+  return result;
+}
