@@ -47,3 +47,54 @@ pub fn solve_part1(input: &str) -> i32 {
 
   return result
 }
+
+#[aoc(day7, part2, Char)]
+pub fn solve_part2(input: &str) -> i32 {
+  let mut current_path = "/".to_owned();
+  let mut data: HashMap<String, i32> = HashMap::new();
+
+  for s in input.split("\n") {
+    if s.chars().nth(0).unwrap() == '$' {
+      let mut command = s.split(" ");
+
+      match command.nth(1).unwrap() {
+        "cd" => {
+          let dir = command.next().unwrap();
+    
+          match dir {
+            "/" => current_path ="/".to_string(),
+            ".." => {
+              let parts:Vec<&str> = current_path.split("/").collect();
+              current_path = parts[0..parts.len()-1].join("/");
+            },
+            _ => current_path =  format!("{}{}/", &current_path, dir),
+          }
+        },
+        _ => continue
+      }
+    } else if s.split(" ").nth(0).unwrap() != "dir" {
+      let value = s.split(" ").nth(0).unwrap().parse::<i32>().unwrap();
+
+      let mut buildup = "".to_string();
+      let parts: Vec<&str> = current_path.split("/").collect();
+
+      for p in 0..&parts.len()-1 {
+        buildup = format!("{}{}/", buildup, parts[p].to_string());
+        data.entry(buildup.clone()).and_modify(|f| *f += value).or_insert(value);
+      }
+    }
+  }
+
+  let mut result = 70000000;
+  let used_space = *data.get(&"/".to_string()).unwrap();
+  let unused_space = 70000000 - used_space;
+  let space_needed = 30000000 - unused_space;
+  
+  for x in data.values() {
+    if *x < result && *x > space_needed {
+      result = *x;
+    }
+  }
+
+  return result
+}
