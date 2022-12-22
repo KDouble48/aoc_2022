@@ -1,11 +1,12 @@
+#[derive(Debug)]
 pub struct Monkey {
-  holding: Vec<i32>,
+  holding: Vec<u64>,
   operator: char,
   modifier: String,
-  test_value: i32,
+  test_value: u64,
   to_true: i32,
   to_false: i32,
-  inspected_items: i32,
+  inspected_items: u64,
 }
 
 impl Clone for Monkey {
@@ -17,30 +18,30 @@ impl Clone for Monkey {
       test_value: self.test_value,
       to_true: self.to_true,
       to_false: self.to_false,
-      inspected_items: self.inspected_items,
+      inspected_items: self.inspected_items.clone(),
     }
   }
 }
 
 impl Monkey {
-  fn operation(&self, x: i32) -> i32 {
+  fn operation(&self, x: u64) -> u64 {
     if self.operator == '*' {
       if self.modifier == "old" {
         x * x
       } else {
-        x * self.modifier.parse::<i32>().unwrap()
+        x * self.modifier.parse::<u64>().unwrap()
       }
     } else {
       if self.modifier == "old" {
         x + x
       } else {
-        x + self.modifier.parse::<i32>().unwrap()
+        x + self.modifier.parse::<u64>().unwrap()
       }
     }
   }
 
-  fn test(&self, x: i32) -> i32 {
-    if x % self.test_value == 0 {
+  fn test(&self, x: u64) -> i32 {
+    if x % self.test_value as u64 == 0 {
       self.to_true
     } else {
       self.to_false
@@ -58,7 +59,7 @@ pub fn input_generator(input: &str) -> Vec<Monkey> {
     let mut operation_text = input_iter.next().unwrap().split_whitespace();
     let mut test = input_iter.next().unwrap().split_whitespace();
 
-    let mut starting_numbers: Vec<i32> = vec![];
+    let mut starting_numbers: Vec<u64> = vec![];
     starting_items.nth(1);
 
     loop {
@@ -75,7 +76,7 @@ pub fn input_generator(input: &str) -> Vec<Monkey> {
     let op = operation_text.nth(4).unwrap();
     let y = operation_text.next().unwrap();
 
-    let divide_number: i32 = test.nth(3).unwrap().parse().unwrap();
+    let divide_number: u64 = test.nth(3).unwrap().parse().unwrap();
     let to_true: i32 = input_iter
       .next()
       .unwrap()
@@ -115,7 +116,7 @@ pub fn input_generator(input: &str) -> Vec<Monkey> {
 }
 
 #[aoc(day11, part1, Char)]
-pub fn solve_part1(input: &Vec<Monkey>) -> i32 {
+pub fn solve_part1(input: &Vec<Monkey>) -> u64 {
   let mut monkeys = input.to_vec();
 
   for _ in 1..=20 {
@@ -134,7 +135,7 @@ pub fn solve_part1(input: &Vec<Monkey>) -> i32 {
     }
   }
 
-  let mut times: Vec<i32>= vec![];
+  let mut times: Vec<u64>= vec![];
 
   for m in monkeys {
     times.push(m.inspected_items);
@@ -155,7 +156,44 @@ pub fn solve_part1(input: &Vec<Monkey>) -> i32 {
   return a * b;
 }
 
-// #[aoc(day11, part2, Char)]
-// pub fn solve_part2(input: &str) -> i32 {
+#[aoc(day11, part2, Char)]
+pub fn solve_part2(input: &Vec<Monkey>) -> u64 {
+  let mut monkeys = input.to_vec();
+  let magic = monkeys.iter().map(|x| x.test_value).product::<u64>(); // Credits: https://github.com/Basicprogrammer10/Advent-Of-Code/blob/master/src/solutions/year_2022/day_11.rs
 
-// }
+  for _ in 1..=10000 {
+    for x in 0..monkeys.len() {
+      let monkey = monkeys[x].clone();
+      for item in &monkey.holding {
+        let mut value = monkey.operation(*item);
+        value = value % magic;
+        let to = monkey.test(value);
+
+
+        monkeys[to as usize].holding.push(value);
+        monkeys[x].inspected_items += 1;
+      }
+      monkeys[x].holding.clear();
+    }
+  }
+
+  let mut times: Vec<u64>= vec![];
+  
+  for m in monkeys {
+    times.push(m.inspected_items);
+  }
+
+  let mut a = 0;
+  let mut b = 0;
+
+  for t in times {
+    if t > a {
+      b = a;
+      a = t;
+    } else if t > b {
+      b = t;
+    }
+  }
+
+  return a * b;
+}
