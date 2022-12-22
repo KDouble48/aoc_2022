@@ -28,7 +28,21 @@ pub fn solve_part1(input: &Vec<i32>) -> i32 {
   return result;
 }
 
-// #[aoc(day10, part2, Char)]
-// pub fn solve_part2(input: &str) -> i32 {
-  
-// }
+#[aoc(day10, part2, Char)]
+pub fn solve_part2(input: &Vec<i32>) -> i32 {
+  let mut input_iter = input.iter();
+
+  for _ in 0..6 {
+    let mut line = "".to_owned();
+    for x in 0..40 {
+      if (x - *input_iter.next().unwrap()).abs() <= 1 {
+        line = format!("{}{}", line, "#")
+      } else {
+        line = format!("{}{}", line, ".")
+      }
+    }
+    println!("{}", line);
+  }
+
+  return 0
+}
