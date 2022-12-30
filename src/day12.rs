@@ -1,3 +1,5 @@
+use std::vec;
+
 pub struct Map {
   nodes: Vec<Vec<Node>>,
   possible_nodes: Vec<(u32, u32)>,
@@ -37,6 +39,10 @@ impl Map {
     self.nodes[self.start.1 as usize][self.start.0 as usize].steps = 0;
 
     loop {
+      if self.possible_nodes.len() == 0 {
+        return u32::MAX
+      }
+
       let closest_node = self.get_closest_possible_node();
       let (nodex, nodey) = closest_node;
       let steps = self.nodes[nodey as usize][nodex as usize].steps;
@@ -104,6 +110,15 @@ impl Map {
 
     return closest_node
   }
+
+  pub fn reset(&mut self) {
+    for row in &mut self.nodes {
+      for node in row {
+        node.steps = u32::MAX;
+        self.possible_nodes = vec![];
+      }
+    }
+  }
 }
 
 #[aoc_generator(day12)]
@@ -146,4 +161,27 @@ pub fn solve_part1(input: &Map) -> u32 {
   let steps = map.steps();
 
   return steps
+}
+
+#[aoc(day12, part2)]
+pub fn solve_part2(input: &Map) -> u32 {
+  let mut map = input.clone();
+  let mut starting_points = vec![];
+  let mut steps = vec![]; 
+
+  for (y, row) in map.nodes.iter().enumerate() {
+    for (x, node) in row.iter().enumerate() {
+      if node.height == 'a' as u8 {
+        starting_points.push((x as u32,y as u32));
+      }
+    }
+  }
+
+  for start in starting_points {
+    map.start = start;
+    steps.push(map.steps());
+    map.reset();
+  }
+  
+  return *steps.iter().min().unwrap()
 }
